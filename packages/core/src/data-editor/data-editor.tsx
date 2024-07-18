@@ -3486,34 +3486,38 @@ const DataEditorImpl: React.ForwardRefRenderFunction<DataEditorRef, DataEditorPr
                 const textPlain = "text/plain";
                 const textHtml = "text/html";
 
-                if (navigator.clipboard.read !== undefined) {
-                    const clipboardContent = await navigator.clipboard.read();
-
-                    for (const item of clipboardContent) {
-                        if (item.types.includes(textHtml)) {
-                            const htmlBlob = await item.getType(textHtml);
-                            const html = await htmlBlob.text();
-                            const decoded = decodeHTML(html);
-                            if (decoded !== undefined) {
-                                data = decoded;
-                                break;
-                            }
-                        }
-                        if (item.types.includes(textPlain)) {
-                            // eslint-disable-next-line unicorn/no-await-expression-member
-                            text = await (await item.getType(textPlain)).text();
-                        }
-                    }
-                } else if (navigator.clipboard.readText !== undefined) {
-                    text = await navigator.clipboard.readText();
-                } else if (e !== undefined && e?.clipboardData !== null) {
-                    if (e.clipboardData.types.includes(textHtml)) {
-                        const html = e.clipboardData.getData(textHtml);
-                        data = decodeHTML(html);
-                    }
-                    if (data === undefined && e.clipboardData.types.includes(textPlain)) {
-                        text = e.clipboardData.getData(textPlain);
-                    }
+                if(navigator?.clipboard) {
+                  if (navigator.clipboard.read !== undefined) {
+                      const clipboardContent = await navigator.clipboard.read();
+  
+                      for (const item of clipboardContent) {
+                          if (item.types.includes(textHtml)) {
+                              const htmlBlob = await item.getType(textHtml);
+                              const html = await htmlBlob.text();
+                              const decoded = decodeHTML(html);
+                              if (decoded !== undefined) {
+                                  data = decoded;
+                                  break;
+                              }
+                          }
+                          if (item.types.includes(textPlain)) {
+                              // eslint-disable-next-line unicorn/no-await-expression-member
+                              text = await (await item.getType(textPlain)).text();
+                          }
+                      }
+                  } else if (navigator.clipboard.readText !== undefined) {
+                      text = await navigator.clipboard.readText();
+                  } else if (e !== undefined && e?.clipboardData !== null) {
+                      if (e.clipboardData.types.includes(textHtml)) {
+                          const html = e.clipboardData.getData(textHtml);
+                          data = decodeHTML(html);
+                      }
+                      if (data === undefined && e.clipboardData.types.includes(textPlain)) {
+                          text = e.clipboardData.getData(textPlain);
+                      }
+                  } else {
+                      return; // I didn't want to read that paste value anyway
+                  }
                 } else {
                     return; // I didn't want to read that paste value anyway
                 }
